@@ -1,12 +1,16 @@
-const express = require('express');
-const dotenv = require('dotenv');
-const {connectDB} = require('./lib/db.js');
-dotenv.config();
-
+import express from 'express';
+import {ENV} from './lib/env.js';
+// import dotenv from 'dotenv';
+import { connectDB } from './lib/db.js';
+import authRoutes from './routes/auth.routes.js';
 const app = express();
+// dotenv.config();
 
-const PORT = process.env.PORT;
+app.use(express.json());
+app.use('/api/auth', authRoutes);
 
+
+const PORT = ENV.PORT;
 connectDB()
 .then(() => {
     app.listen(PORT, () => {
