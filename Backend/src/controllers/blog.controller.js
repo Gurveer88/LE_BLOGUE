@@ -25,7 +25,7 @@ export const createBlog = async (req, res) => {
 }
 export const getMyBlogs = async (req, res) => {
     const user = req.user;
-    const Blogs = await User.find({id : user._id}).select("blogs").populate("blogs");
+    const Blogs = await User.findById(user._id).select("blogs").populate("blogs");
     return res.status(200).json({status: "success", message: "Blogs fetched successfully", Blogs});    
 }
 export const deleteMyBlog = async (req, res) => {
