@@ -1,14 +1,18 @@
 import express from 'express';
 import {ENV} from './lib/env.js';
-// import dotenv from 'dotenv';
+import blogRoutes from './routes/blog.routes.js';
 import { connectDB } from './lib/db.js';
 import authRoutes from './routes/auth.routes.js';
+import cookieParser from 'cookie-parser';
+import cors from 'cors';
+
 const app = express();
-// dotenv.config();
 
 app.use(express.json());
+app.use(cors());
 app.use('/api/auth', authRoutes);
-
+app.use(cookieParser());
+app.use( '/api', blogRoutes);
 
 const PORT = ENV.PORT;
 connectDB()
