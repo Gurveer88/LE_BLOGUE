@@ -1,7 +1,6 @@
 import User from "../models/User.js";
 import { generateToken } from "../lib/utils.js";
 import bcrypt from "bcrypt";
-import mongoose from "mongoose";
 
 export const register = async (req, res) => {
   try {
@@ -48,3 +47,35 @@ export const register = async (req, res) => {
     console.log("Error in the register controller : ", error);
   }
 };
+
+export const login = async (req, res) => {
+  try {
+    const email = (req.body.email).trim();
+    const password = (req.body.password).trim();
+    if(!email || !password){
+      return res.status(400).json({status: "failed", message: "All the fields are required"});
+    }
+    const user = await User.findOne({email});
+    // console.log(user);
+    if(!user){
+      return res.status(400).json({status: "failed", message: "user doesn't exist"});
+    }
+    // console.log(password);
+    // console.log(user.password);
+    const passCheck = await bcrypt.compare(password, user.password);
+    // console.log(passCheck);
+    if(!passCheck){
+      return res.status(400).json({status: "failed", message: "Wrong password"});
+    }
+    generateToken(user._id, res);
+      return res.status(200).json({status: "Succesfull", message: "login successfull"});
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({status: "failed", message: "Internal server error"});
+  }
+}
+
+export const logout = async (req, res) => {
+  req.clearCookie('jwt');
+  return res.status(200).json({status: "success", message: "logout succesfull"});
+}
