@@ -7,14 +7,14 @@ export const createBlog = async (req, res) => {
   if (!title || !description || !author) {
     return res
       .status(400)
-      .json({ status: "failed", message: "All the fields are required" });
+      .json({ status: false, message: "All the fields are required" });
   }
   const user = req.user;
   if (!user) {
     return res
       .status(400)
       .json({
-        status: "failed",
+        status: false,
         message: "Coudn't fetch the User from cookies",
       });
   }
@@ -29,14 +29,14 @@ export const createBlog = async (req, res) => {
   await User.findByIdAndUpdate(user, { $push: { blogs: newBlog._id } });
   return res
     .status(201)
-    .json({ status: "successfull", message: "New blog created", newBlog });
+    .json({ status: true, message: "New blog created", newBlog });
 };
 export const getMyBlogs = async (req, res) => {
   const user = req.user;
   const Blogs = await User.findById(user._id).select("blogs").populate("blogs");
   return res
     .status(200)
-    .json({ status: "success", message: "Blogs fetched successfully", Blogs });
+    .json({ status: true, message: "Blogs fetched successfully", Blogs });
 };
 export const deleteMyBlog = async (req, res) => {
   const blogId = req.params.id;
@@ -45,18 +45,18 @@ export const deleteMyBlog = async (req, res) => {
   if (!existingBlog) {
     return res
       .status(404)
-      .json({ status: "failed", message: "The blog wasn't found" });
+      .json({ status: false, message: "The blog wasn't found" });
   }
   if (existingBlog.User.toString() !== user._id.toString()) {
     return res
       .status(403)
-      .json({ status: "failed", message: "unauthorized request" });
+      .json({ status: false, message: "unauthorized request" });
   }
   await Blog.findByIdAndDelete(blogId);
   await User.findByIdAndUpdate(user._id, { $pull: { blogs: blogId } });
   return res
     .status(200)
-    .json({ status: "success", message: "The blog was deleted successfully" });
+    .json({ status: true, message: "The blog was deleted successfully" });
 };
 export const updateMyBlog = async (req, res) => {
   const { title, description, author, draft } = req.body;
@@ -72,17 +72,17 @@ export const updateMyBlog = async (req, res) => {
   if (!existingBlog) {
     return res
       .status(404)
-      .json({ status: "failed", message: "The blog wasn't found" });
+      .json({ status: false, message: "The blog wasn't found" });
   }
   if (existingBlog.User.toString() !== user._id.toString()) {
     return res
       .status(403)
-      .json({ status: "failed", message: "unauthorized request" });
+      .json({ status: false, message: "unauthorized request" });
   }
   await Blog.findByIdAndUpdate(blogId, updateData, { new: true });
   return res
     .status(200)
-    .json({ status: "success", message: "Blog updated successfully" });
+    .json({ status: true, message: "Blog updated successfully" });
 };
 export const transferBlog = async (req, res) => {
   const user = req.user;
@@ -91,7 +91,7 @@ export const transferBlog = async (req, res) => {
   if (!futureOwnerEmail) {
     return res
       .status(400)
-      .json({ status: "failed", message: "Please provide with a email" });
+      .json({ status: false, message: "Please provide with a email" });
   }
   const existingUser = await User.findOne({ email: futureOwnerEmail }).select(
     "-password",
@@ -100,23 +100,23 @@ export const transferBlog = async (req, res) => {
   if (!blog) {
     return res
       .status(404)
-      .json({ status: "failed", message: "The blog wasn't found" });
+      .json({ status: false, message: "The blog wasn't found" });
   }
   if (!existingUser) {
     return res
       .status(404)
-      .json({ status: "failed", message: "The user wasn't found" });
+      .json({ status: false, message: "The user wasn't found" });
   }
   if (blog.User.toString() !== user._id.toString()) {
     return res
       .status(403)
-      .json({ status: "failed", message: "unauthorized request" });
+      .json({ status: false, message: "unauthorized request" });
   }
   if (existingUser._id.toString() == user._id.toString()) {
     return res
       .status(400)
       .json({
-        status: "failed",
+        status: false,
         message: "Ownership can't be transferred to yourself",
       });
   }
@@ -124,7 +124,7 @@ export const transferBlog = async (req, res) => {
   return res
     .status(200)
     .json({
-      status: "success",
+      status: true,
       message: "Ownership will be transfered once the user accepts the request",
     });
 };

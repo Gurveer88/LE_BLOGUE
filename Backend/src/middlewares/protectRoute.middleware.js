@@ -8,7 +8,7 @@ export const protectRoute = async (req, res, next) => {
       return res
         .status(401)
         .json({
-          status: "failed",
+          status: false,
           message: "No token provided, authorization denied",
         });
     }
