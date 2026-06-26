@@ -7,20 +7,22 @@ export const register = async (req, res) => {
     const { fullName, email, password } = req.body;
 
     if (!fullName || !email || !password) {
-      return res.status(400).json({ message: "Please fill all the fields" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Please fill all the fields" });
     }
 
     if (password.length < 6) {
       return res
         .status(400)
-        .json({ message: "Password should be atleast 8 characters" });
+        .json({ success: false, message: "Password should atleast be of 6 characters" });
     }
 
     const email_regex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     if (!email_regex.test(email)) {
       return res
         .status(400)
-        .json({ message: "Given email is invalid, try again" });
+        .json({ success: false, message: "Invalid email" });
     }
 
     const existing_User = await User.findOne({ email });
@@ -28,7 +30,7 @@ export const register = async (req, res) => {
       console.log(existing_User);
       return res
         .status(400)
-        .json({ message: "User already exists in the database" });
+        .json({ success: false, message: "The user already exists" });
     }
 
     const salt = await bcrypt.genSalt(10);
@@ -42,7 +44,13 @@ export const register = async (req, res) => {
 
     await newUser.save();
     await generateToken(newUser._id, res);
-    return res.status(200).json({message: "User registered successfully"});
+    return res
+      .status(200)
+      .json({
+        success: true,
+        message: "User registered successfully",
+        user: newUser,
+      });
   } catch (error) {
     console.log("Error in the register controller : ", error);
   }
@@ -50,32 +58,44 @@ export const register = async (req, res) => {
 
 export const login = async (req, res) => {
   try {
-    const email = (req.body.email).trim();
-    const password = (req.body.password).trim();
-    if(!email || !password){
-      return res.status(400).json({status: "failed", message: "All the fields are required"});
+    const email = req.body.email.trim();
+    const password = req.body.password.trim();
+    if (!email || !password) {
+      return res
+        .status(400)
+        .json({ status: false, message: "All the fields are required" });
     }
-    const user = await User.findOne({email});
+    const user = await User.findOne({ email });
     // console.log(user);
-    if(!user){
-      return res.status(400).json({status: "failed", message: "user doesn't exist"});
+    if (!user) {
+      return res
+        .status(400)
+        .json({ status: false, message: "user doesn't exist" });
     }
     // console.log(password);
     // console.log(user.password);
     const passCheck = await bcrypt.compare(password, user.password);
     // console.log(passCheck);
-    if(!passCheck){
-      return res.status(400).json({status: "failed", message: "Wrong password"});
+    if (!passCheck) {
+      return res
+        .status(400)
+        .json({ status: false, message: "Wrong password" });
     }
     generateToken(user._id, res);
-      return res.status(200).json({status: "Succesfull", message: "login successfull"});
+    return res
+      .status(200)
+      .json({ status: true, message: "login successfull", user });
   } catch (error) {
     console.log(error);
-    return res.status(500).json({status: "failed", message: "Internal server error"});
+    return res
+      .status(500)
+      .json({ status: false, message: "Internal server error" });
   }
-}
+};
 
 export const logout = async (req, res) => {
-  req.clearCookie('jwt');
-  return res.status(200).json({status: "success", message: "logout succesfull"});
-}
+  req.clearCookie("jwt");
+  return res
+    .status(200)
+    .json({ status: "success", message: "logout succesfull" });
+};
